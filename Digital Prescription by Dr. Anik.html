@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ANIK Rx app | Wizard Rx suite </title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --cobalt: #3498db;
+            --slate-bg: #1a202c;
+            --card-bg: #2d3748;
+            --input-bg: #1e2633;
+            --cream-page: #fffdf5;
+            --success: #2ecc71;
+            --A4-width: 794px;
+            --A4-height: 1123px;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: var(--slate-bg); margin: 0; color: #e2e8f0; overflow-x: hidden; }
+
+        /* Top Ticker Animation */
+        .top-ticker {
+            background: linear-gradient(90deg, #2980b9, #3498db);
+            color: white;
+            padding: 6px 0;
+            font-size: 11px;
+            font-weight: 700;
+            overflow: hidden;
+            white-space: nowrap;
+            letter-spacing: 1px;
+        }
+        .ticker-content {
+            display: inline-block;
+            animation: scrollText 20s linear infinite;
+        }
+        @keyframes scrollText {
+            from { transform: translateX(100%); }
+            to { transform: translateX(-100%); }
+        }
+
+        /* Navigation */
+        .nav-bar {
+            display: flex; background: var(--card-bg); position: sticky; top: 0; z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .nav-item {
+            flex: 1; padding: 16px 5px; text-align: center; 
+            font-size: 10px; font-weight: 800; color: #718096; cursor: pointer; 
+            transition: 0.3s; text-transform: uppercase;
+        }
+        .nav-item.active { color: var(--cobalt); border-bottom: 3px solid var(--cobalt); background: rgba(255,255,255,0.02); }
+
+        .container { max-width: 500px; margin: 0 auto; padding: 15px; min-height: 100vh; }
+        .view { display: none; animation: fadeIn 0.3s ease-in; }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Eye-Friendly 3D Soft-Dark Design */
+        .card { 
+            background: var(--card-bg); border-radius: 18px; padding: 22px; 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.25); margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        h3 { margin: 0 0 15px 0; font-size: 14px; color: var(--cobalt); text-transform: uppercase; letter-spacing: 1px; }
+        
+        .field-label { display: block; font-size: 9px; font-weight: 800; color: #a0aec0; margin-bottom: 6px; text-transform: uppercase; }
+        
+        input, textarea, select {
+            width: 100%; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px;
+            font-size: 14px; background: var(--input-bg); color: #fff;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4);
+            transition: all 0.3s; margin-bottom: 15px;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none; border-color: var(--cobalt);
+            box-shadow: inset 1px 1px 3px rgba(0,0,0,0.5), 0 0 8px rgba(52, 152, 219, 0.3);
+            background: #252f3f;
+        }
+
+        .drug-row { 
+            display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; 
+            margin-bottom: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 12px;
+        }
+        .drug-row input { margin-bottom: 0; font-size: 12px; padding: 8px; }
+
+        .btn { 
+            width: 100%; padding: 15px; border: none; border-radius: 14px; 
+            font-weight: 800; cursor: pointer; transition: 0.3s;
+            text-transform: uppercase; font-size: 12px;
+        }
+        .btn-primary { background: linear-gradient(135deg, #3498db, #2980b9); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .btn-ghost { background: #4a5568; color: #e2e8f0; margin-top: 5px; }
+
+        /* A4 PREVIEW SYSTEM */
+        .A4-outer-scroll {
+            width: 100%; overflow-x: auto; background: #111; padding: 30px 0;
+            display: flex; justify-content: center;
+        }
+
+        #prescription-pad {
+            background: var(--cream-page);
+            width: var(--A4-width);
+            height: var(--A4-height);
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            color: #1a202c;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        @media (max-width: 800px) {
+            .A4-outer-scroll { justify-content: flex-start; padding: 10px; height: 600px; overflow-y: auto; }
+            #prescription-pad { transform: scale(0.42); transform-origin: top left; margin-bottom: -650px; }
+        }
+
+        /* Pad Layout Components */
+        .header-box { border-bottom: 3px solid #000; padding-bottom: 20px; margin-bottom: 20px; }
+        .dr-name { font-size: 28px; font-weight: 900; margin: 0; color: #000; }
+        .dr-details { font-size: 14px; margin-top: 2px; }
+        
+        .patient-bar { 
+            display: flex; justify-content: space-between; border-bottom: 1px solid #000;
+            padding: 12px 0; font-size: 14px; margin-bottom: 30px;
+        }
+
+        .main-layout { display: grid; grid-template-columns: 220px 1fr; gap: 35px; flex-grow: 1; }
+        .clinical-side { border-right: 1px solid #e2e8f0; padding-right: 15px; }
+        .clinical-side h4 { font-size: 11px; color: var(--cobalt); text-transform: uppercase; margin: 18px 0 6px 0; border-bottom: 1px solid #f1f1f1; }
+        .side-text { font-size: 13px; line-height: 1.5; white-space: pre-wrap; color: #2d3748; }
+
+        .rx-symbol { font-size: 50px; font-family: 'Georgia', serif; font-weight: bold; margin-bottom: 15px; }
+        .med-entry { margin-bottom: 15px; }
+        .med-entry .title { font-weight: 800; font-size: 16px; color: #000; }
+        .med-entry .dose { font-size: 14px; padding-left: 20px; color: #4a5568; }
+
+        .footer-info { margin-top: auto; text-align: center; font-size: 10px; color: #a0aec0; border-top: 1px solid #edf2f7; padding-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="top-ticker">
+    <div class="ticker-content">
+         • DR. ANIK MONDAL , MBBS (DU) , CMU (Ultra)  •  
+    </div>
+</div>
+
+<div class="nav-bar">
+    <div class="nav-item" onclick="view('v-learn', this)">Save Your Rx</div>
+    <div class="nav-item" onclick="view('v-profile', this)">Doctor Profile</div>
+    <div class="nav-item active" onclick="view('v-write', this)">Prescription</div>
+    <div class="nav-item" onclick="view('v-preview', this)">Preview</div>
+</div>
+
+<div class="container">
+    
+    <div id="v-learn" class="view">
+        <div class="card">
+            <h3>Knowledge Bank</h3>
+            <span class="field-label">Diagnosis Name</span>
+            <input type="text" id="learn-diag">
+            <span class="field-label">Protocol (Drug | Dose | Dur.)</span>
+            <textarea id="learn-rx" rows="5" placeholder="Tab. Napa | 1+0+1 | 5 days"></textarea>
+            <button class="btn btn-primary" onclick="saveLearn()">Add to Memory</button>
+            <div id="learn-list" style="margin-top:15px;"></div>
+        </div>
+    </div>
+
+    <div id="v-profile" class="view">
+        <div class="card">
+            <h3>Doctor Settings</h3>
+            <span class="field-label">Full Name</span>
+            <input type="text" id="doc-n">
+            <span class="field-label">Qualifications</span>
+            <input type="text" id="doc-d">
+            <span class="field-label">Designation</span>
+            <input type="text" id="doc-s">
+            <span class="field-label">BMDC Reg</span>
+            <input type="text" id="doc-r">
+            <span class="field-label">Address/Clinic</span>
+            <input type="text" id="doc-c">
+            <button class="btn btn-primary" onclick="saveProf()">Update Profile</button>
+        </div>
+    </div>
+
+    <div id="v-write" class="view active">
+        <div class="card">
+            <h3>Patient Specs</h3>
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px">
+                <div><span class="field-label">Name</span><input type="text" id="p-n"></div>
+                <div><span class="field-label">Age/Sex</span><input type="text" id="p-a"></div>
+            </div>
+            <span class="field-label">Weight</span>
+            <input type="text" id="p-w" placeholder="e.g. 65 kg">
+        </div>
+
+        <div class="card">
+            <h3>Clinical</h3>
+            <span class="field-label">History / CC</span>
+            <textarea id="p-cc" rows="2"></textarea>
+            
+            <span class="field-label">Load Template</span>
+            <select id="diag-select" onchange="loadManagement(this.value)">
+                <option value="">-- Select Template --</option>
+            </select>
+            
+            <span class="field-label">Diagnosis</span>
+            <input type="text" id="p-diag">
+        </div>
+
+        <div class="card">
+            <h3>Medicines (Rx)</h3>
+            <div id="rx-rows">
+                <div class="drug-row">
+                    <input type="text" class="dn" placeholder="Drug Name" oninput="predict(this)">
+                    <input type="text" class="do" placeholder="Dose">
+                    <input type="text" class="du" placeholder="Days">
+                </div>
+            </div>
+            <button class="btn btn-ghost" onclick="addDrugRow()">+ Add Medicine</button>
+        </div>
+
+        <div class="card">
+            <span class="field-label">Investigations & Advice</span>
+            <textarea id="p-ix" rows="2"></textarea>
+            <textarea id="p-adv" rows="2"></textarea>
+            <button class="btn btn-primary" onclick="render()">Preview A4 Pad</button>
+        </div>
+    </div>
+
+    <div id="v-preview" class="view">
+        <div class="A4-outer-scroll">
+            <div id="prescription-pad">
+                <div class="header-box">
+                    <div class="dr-name" id="out-doc"></div>
+                    <div class="dr-details" id="out-deg"></div>
+                    <div class="dr-details" id="out-sp"></div>
+                    <div class="dr-details" id="out-reg"></div>
+                    <div class="dr-details" id="out-con" style="font-size:11px; margin-top:6px; color:#555"></div>
+                </div>
+
+                <div class="patient-bar">
+                    <span>Pt: <b id="out-pn"></b></span>
+                    <span>Age/Sex: <b id="out-pa"></b></span>
+                    <span>Wt: <b id="out-pw"></b></span>
+                    <span>Date: <b id="out-dt"></b></span>
+                </div>
+
+                <div class="main-layout">
+                    <div class="clinical-side">
+                        <h4>CC / History</h4>
+                        <div class="side-text" id="out-pcc"></div>
+                        <h4>Investigations</h4>
+                        <div class="side-text" id="out-pix"></div>
+                        <h4>Diagnosis</h4>
+                        <div class="side-text" id="out-pdiag" style="font-weight:bold; color:#000"></div>
+                    </div>
+                    <div class="right-panel">
+                        <div class="rx-symbol">Rx</div>
+                        <div id="out-meds"></div>
+                        <div style="margin-top:25px; border-top: 1px dashed #ccc; padding-top:12px">
+                            <span style="font-size:11px; font-weight:900; color:var(--cobalt)">ADVICE / PLAN:</span>
+                            <div class="side-text" id="out-padv"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-info">
+                    Clinical Suite • Digital A4 Standard Output
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-primary" style="background:var(--success); margin-top:20px" onclick="download()">Save Prescription In Your Gallery</button>
+    </div>
+</div>
+
+<script>
+    let db = JSON.parse(localStorage.getItem('SababRx_V8')) || { prof:{}, learn:{}, history:{} };
+
+    function view(id, el) {
+        document.querySelectorAll('.view, .nav-item').forEach(x => x.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(el) el.classList.add('active');
+        if(id === 'v-learn') renderLearnList();
+    }
+
+    function saveProf() {
+        db.prof = { n:val('doc-n'), d:val('doc-d'), s:val('doc-s'), r:val('doc-r'), c:val('doc-c') };
+        save(); alert("Settings Saved");
+    }
+
+    function saveLearn() {
+        const title = val('learn-diag');
+        const protocol = val('learn-rx');
+        if(title && protocol) {
+            db.learn[title] = protocol;
+            save(); renderLearnList(); populateSelect();
+            document.getElementById('learn-diag').value = '';
+            document.getElementById('learn-rx').value = '';
+        }
+    }
+
+    function renderLearnList() {
+        const l = document.getElementById('learn-list');
+        l.innerHTML = '';
+        Object.keys(db.learn).forEach(k => {
+            l.innerHTML += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; margin-bottom:8px; display:flex; justify-content:space-between; font-size:12px">
+                <b>${k}</b> <span style="color:#ff7675; cursor:pointer" onclick="delLearn('${k}')">Remove</span>
+            </div>`;
+        });
+    }
+
+    function delLearn(k) { delete db.learn[k]; save(); renderLearnList(); populateSelect(); }
+
+    function populateSelect() {
+        const s = document.getElementById('diag-select');
+        s.innerHTML = '<option value="">-- Select Template --</option>';
+        Object.keys(db.learn).forEach(k => s.innerHTML += `<option value="${k}">${k}</option>`);
+    }
+
+    function loadManagement(key) {
+        if(!key) return;
+        document.getElementById('p-diag').value = key;
+        const protocol = db.learn[key];
+        const container = document.getElementById('rx-rows');
+        container.innerHTML = '';
+        const lines = protocol.split('\n');
+        lines.forEach(line => {
+            const parts = line.split('|');
+            if(parts.length >= 1) addDrugRow(parts[0].trim(), parts[1]?.trim(), parts[2]?.trim());
+        });
+    }
+
+    function addDrugRow(n='', o='', u='') {
+        const div = document.createElement('div');
+        div.className = 'drug-row';
+        div.innerHTML = `<input type="text" class="dn" value="${n}" placeholder="Drug" oninput="predict(this)">
+                         <input type="text" class="do" value="${o}" placeholder="Dose">
+                         <input type="text" class="du" value="${u}" placeholder="Dur.">`;
+        document.getElementById('rx-rows').appendChild(div);
+    }
+
+    function predict(input) {
+        const v = input.value.toLowerCase();
+        if(db.history[v]) {
+            const row = input.parentElement;
+            row.querySelector('.do').value = db.history[v].o;
+            row.querySelector('.du').value = db.history[v].u;
+        }
+    }
+
+    function render() {
+        document.getElementById('out-doc').innerText = db.prof.n || "";
+        document.getElementById('out-deg').innerText = db.prof.d || "";
+        document.getElementById('out-sp').innerText = db.prof.s || "";
+        document.getElementById('out-reg').innerText = "Reg: " + (db.prof.r || "");
+        document.getElementById('out-con').innerText = db.prof.c || "";
+
+        document.getElementById('out-pn').innerText = val('p-n');
+        document.getElementById('out-pa').innerText = val('p-a');
+        document.getElementById('out-pw').innerText = val('p-w');
+        document.getElementById('out-dt').innerText = new Date().toLocaleDateString();
+
+        document.getElementById('out-pcc').innerText = val('p-cc');
+        document.getElementById('out-pix').innerText = val('p-ix');
+        document.getElementById('out-pdiag').innerText = val('p-diag');
+        document.getElementById('out-padv').innerText = val('p-adv');
+
+        const meds = document.getElementById('out-meds');
+        meds.innerHTML = '';
+        document.querySelectorAll('.drug-row').forEach(r => {
+            const dn = r.querySelector('.dn').value;
+            const dose = r.querySelector('.do').value;
+            const dur = r.querySelector('.du').value;
+            if(dn) {
+                meds.innerHTML += `<div class="med-entry"><div class="title">${dn}</div><div class="dose">${dose} --- ${dur}</div></div>`;
+                db.history[dn.toLowerCase()] = { o: dose, u: dur };
+            }
+        });
+        save(); view('v-preview', document.querySelectorAll('.nav-item')[3]);
+    }
+
+    function download() {
+        const pad = document.getElementById('prescription-pad');
+        html2canvas(pad, { scale: 3, backgroundColor: null }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `Rx_${val('p-n') || 'Patient'}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        });
+    }
+
+    function val(id) { return document.getElementById(id).value; }
+    function save() { localStorage.setItem('SababRx_V8', JSON.stringify(db)); }
+
+    window.onload = () => {
+        if(db.prof.n) {
+            document.getElementById('doc-n').value = db.prof.n;
+            document.getElementById('doc-d').value = db.prof.d;
+            document.getElementById('doc-s').value = db.prof.s;
+            document.getElementById('doc-r').value = db.prof.r;
+            document.getElementById('doc-c').value = db.prof.c;
+        }
+        populateSelect();
+    };
+</script>
+
+</body>
+</html>
